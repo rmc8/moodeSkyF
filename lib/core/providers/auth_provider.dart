@@ -191,13 +191,16 @@ class AuthNotifier extends _$AuthNotifier {
     Future.microtask(() async {
       final success = await _AuthUtils.safeExecute<bool>(
         () async {
-          // TODO: Replace with proper logging system
-          debugPrint('Starting background profile refresh for all accounts...');
-          // TODO: プロフィールリフレッシュ機能は将来の実装で追加予定
+          debugPrint('🔄 [AUTH] Starting background profile refresh for all accounts...');
+          
+          // 全アカウントのプロフィール情報を更新
+          final successCount = await _blueskyService.fetchAndUpdateAllProfiles();
+          debugPrint('✅ [AUTH] Background profile refresh completed: $successCount accounts updated');
+          
+          // 認証状態を更新してUIに反映
           await _updateAuthenticatedState();
-          // TODO: Replace with proper logging system
-          debugPrint('Background profile refresh completed successfully');
-          return true;
+          
+          return successCount > 0;
         },
         'Background profile refresh failed',
         fallback: false,
@@ -206,6 +209,7 @@ class AuthNotifier extends _$AuthNotifier {
       if (success != true) {
         // フォールバックとして認証状態の更新のみ試行
         await _AuthUtils.safeExecute<void>(() async {
+          debugPrint('⚠️ [AUTH] Profile refresh failed, updating authentication state only');
           await _updateAuthenticatedState();
         }, 'Fallback profile refresh also failed');
       }
@@ -464,20 +468,29 @@ class AuthNotifier extends _$AuthNotifier {
   // Fetch and update profile information for a specific account
   Future<void> _fetchAndUpdateProfileInfo(String accountDid) async {
     try {
-      // TODO: プロフィール取得機能は将来の実装で追加予定
-      // TODO: Replace with proper logging system
-      debugPrint('Profile info fetching for account $accountDid (placeholder)');
+      debugPrint('🔄 [AUTH] Starting profile fetch for account: ${accountDid.substring(0, 20)}...');
+      
+      final success = await _blueskyService.fetchAndUpdateProfile(accountDid);
+      if (success) {
+        debugPrint('✅ [AUTH] Profile information updated successfully for account');
+      } else {
+        debugPrint('⚠️ [AUTH] Profile update failed, but continuing with authentication');
+      }
     } catch (e) {
       // プロフィール取得に失敗した場合でも、アカウント作成は成功とみなす
-      // TODO: Replace with proper logging system
-      debugPrint('Failed to fetch profile info for $accountDid: $e');
+      debugPrint('❌ [AUTH] Failed to fetch profile info for $accountDid: $e');
+      debugPrint('⚠️ [AUTH] Continuing with authentication despite profile fetch failure');
     }
   }
 
   // 全アカウントのプロフィール情報を更新する
   Future<void> refreshAllProfiles() async {
     await _AuthUtils.safeExecute<void>(() async {
-      // TODO: プロフィール更新機能は将来の実装で追加予定
+      debugPrint('🔄 [AUTH] Starting refresh of all account profiles');
+      
+      final successCount = await _blueskyService.fetchAndUpdateAllProfiles();
+      debugPrint('✅ [AUTH] Profile refresh complete: $successCount accounts updated');
+      
       // 状態を更新してUIに反映
       await _updateAuthenticatedState();
     }, 'Failed to refresh all profiles');
@@ -486,7 +499,19 @@ class AuthNotifier extends _$AuthNotifier {
   // 必要なアカウントのプロフィール情報のみを更新する
   Future<void> refreshProfilesIfNeeded() async {
     await _AuthUtils.safeExecute<void>(() async {
-      // TODO: プロフィール更新機能は将来の実装で追加予定
+      debugPrint('🔄 [AUTH] Checking and refreshing profiles if needed');
+      
+      // アクティブアカウントのプロフィールのみ更新
+      final activeAccount = await _blueskyService.getActiveAccount();
+      if (activeAccount != null) {
+        final success = await _blueskyService.fetchAndUpdateProfile(activeAccount.did);
+        if (success) {
+          debugPrint('✅ [AUTH] Active account profile updated successfully');
+        } else {
+          debugPrint('⚠️ [AUTH] Failed to update active account profile');
+        }
+      }
+      
       // 状態を更新してUIに反映
       await _updateAuthenticatedState();
     }, 'Failed to refresh profiles if needed');

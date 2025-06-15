@@ -8,6 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // Project imports:
 import 'package:moodesky/services/bluesky/services/auth_service.dart';
+import 'package:moodesky/services/bluesky/services/profile_service.dart';
 import 'package:moodesky/services/database/database.dart';
 import 'package:moodesky/shared/models/auth_models.dart';
 
@@ -39,6 +40,7 @@ class BlueskyServiceV2 {
   
   // Service modules
   late final AuthService auth;
+  late final ProfileService profile;
   
   BlueskyServiceV2({
     required this.database,
@@ -50,6 +52,9 @@ class BlueskyServiceV2 {
       database: database,
       secureStorage: secureStorage,
       authConfig: authConfig,
+    );
+    profile = ProfileService(
+      database: database,
     );
   }
 
@@ -266,5 +271,84 @@ class BlueskyServiceV2 {
            lowerString.contains('tokenvalidationfailed') ||
            lowerString.contains('invalidsignature') ||
            lowerString.contains('token verification failed');
+  }
+
+  /// プロフィール情報を取得してデータベースに保存
+  /// 
+  /// [accountDid] - プロフィールを取得するアカウントのDID
+  /// 
+  /// Returns: 成功時true、失敗時false
+  Future<bool> fetchAndUpdateProfile(String accountDid) async {
+    try {
+      debugPrint('🔄 [SERVICE] Starting profile fetch for account: ${accountDid.substring(0, 20)}...');
+      
+      return await _executeWithTokenRefresh(accountDid, (client) async {
+        return await profile.fetchAndUpdateProfile(
+          client: client,
+          did: accountDid,
+        );
+      });
+    } catch (e) {
+      debugPrint('❌ [SERVICE] Failed to fetch and update profile for $accountDid: $e');
+      return false;
+    }
+  }
+
+  /// 全アカウントのプロフィール情報を一括更新
+  /// 
+  /// Returns: 成功したアカウント数
+  Future<int> fetchAndUpdateAllProfiles() async {
+    try {
+      debugPrint('🔄 [SERVICE] Starting bulk profile update for all accounts');
+      
+      final accounts = await getAllAccounts();
+      if (accounts.isEmpty) {
+        debugPrint('⚠️ [SERVICE] No accounts found for profile update');
+        return 0;
+      }
+
+      int successCount = 0;
+      
+      for (final account in accounts) {
+        try {
+          final success = await fetchAndUpdateProfile(account.did);
+          if (success) {
+            successCount++;
+          }
+          
+          // API負荷軽減のため間隔を空ける
+          await Future.delayed(const Duration(milliseconds: 500));
+        } catch (e) {
+          debugPrint('❌ [SERVICE] Error updating profile for ${account.handle}: $e');
+        }
+      }
+      
+      debugPrint('✅ [SERVICE] Bulk profile update complete: $successCount/${accounts.length} accounts updated');
+      return successCount;
+    } catch (e) {
+      debugPrint('❌ [SERVICE] Failed to perform bulk profile update: $e');
+      return 0;
+    }
+  }
+
+  /// 指定されたアカウントのプロフィール情報を取得（データベース更新なし）
+  /// 
+  /// [accountDid] - プロフィールを取得するアカウントのDID
+  /// 
+  /// Returns: ProfileInfo または null（取得失敗時）
+  Future<ProfileInfo?> getProfile(String accountDid) async {
+    try {
+      debugPrint('🔍 [SERVICE] Fetching profile info for account: ${accountDid.substring(0, 20)}...');
+      
+      return await _executeWithTokenRefresh(accountDid, (client) async {
+        return await profile.getProfile(
+          client: client,
+          did: accountDid,
+        );
+      });
+    } catch (e) {
+      debugPrint('❌ [SERVICE] Failed to get profile for $accountDid: $e');
+      return null;
+    }
   }
 }

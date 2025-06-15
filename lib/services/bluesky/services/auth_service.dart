@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 // Package imports:
 import 'package:atproto/atproto.dart' as atproto;
 import 'package:atproto_core/atproto_core.dart' as atcore;
+import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:drift/drift.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
@@ -339,6 +340,11 @@ class AuthService {
       }
 
       debugPrint('Token refresh successful for account: ${account.handle}');
+      
+      // セッション更新成功時にプロフィール情報も更新
+      debugPrint('🔄 [AUTH] Updating profile information after session refresh');
+      await _updateProfileAfterRefresh(accountDid);
+      
       return newSessionData;
     } catch (e) {
       debugPrint('Failed to refresh session for $accountDid: $e');
@@ -592,6 +598,10 @@ class AuthService {
           }
         }
         
+        // プロフィール情報更新（refreshSessionで既に実行されているが念のため）
+        debugPrint('🔄 [AUTH] Ensuring profile is updated after refresh');
+        await _updateProfileAfterRefresh(accountDid);
+        
         // Return success result
         final account = await database.accountDao.getAccountByDid(accountDid);
         if (account != null) {
@@ -680,6 +690,61 @@ class AuthService {
       debugPrint('✅ [AUTH] Default refresh expiry set to: $defaultExpiry');
       
       return defaultExpiry;
+    }
+  }
+
+  /// セッション更新後にプロフィール情報を更新
+  /// 
+  /// [accountDid] - プロフィールを更新するアカウントのDID
+  Future<void> _updateProfileAfterRefresh(String accountDid) async {
+    try {
+      debugPrint('🔄 [AUTH] Starting profile update after session refresh for: ${accountDid.substring(0, 20)}...');
+      
+      // アカウント情報を取得
+      final account = await database.accountDao.getAccountByDid(accountDid);
+      if (account == null) {
+        debugPrint('❌ [AUTH] Account not found for profile update: $accountDid');
+        return;
+      }
+
+      if (account.accessJwt == null) {
+        debugPrint('❌ [AUTH] No access token available for profile update');
+        return;
+      }
+
+      // AT Protocolセッションを作成
+      final session = atcore.Session(
+        did: account.did,
+        handle: account.handle,
+        accessJwt: account.accessJwt!,
+        refreshJwt: account.refreshJwt ?? '',
+      );
+
+      // Blueskyクライアントを作成（より高レベルのAPI）
+      final blueskyClient = bsky.Bluesky.fromSession(session);
+      
+      // プロフィール情報を取得
+      final profileResponse = await blueskyClient.actor.getProfile(actor: accountDid);
+      final profileData = profileResponse.data;
+      
+      debugPrint('✅ [AUTH] Profile fetched successfully:');
+      debugPrint('   Handle: ${profileData.handle}');
+      debugPrint('   DisplayName: ${profileData.displayName ?? 'null'}');
+      debugPrint('   Avatar: ${profileData.avatar != null ? '${profileData.avatar!.substring(0, 50)}...' : 'null'}');
+      
+      // データベースに保存
+      await database.accountDao.updateAccountProfile(
+        did: accountDid,
+        displayName: profileData.displayName,
+        description: profileData.description,
+        avatar: profileData.avatar,
+        banner: profileData.banner,
+      );
+      
+      debugPrint('✅ [AUTH] Profile updated successfully in database after session refresh');
+    } catch (e) {
+      debugPrint('❌ [AUTH] Failed to update profile after session refresh: $e');
+      // プロフィール更新の失敗は致命的ではないため、エラーをログに記録するのみ
     }
   }
 }
