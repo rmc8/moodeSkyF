@@ -138,12 +138,16 @@ gh issue close 123
 ```
 
 **Current Active Issues:**
-- [#3](https://github.com/rmc8/moodeSky/issues/3) - セッション管理機能の完全実装 (high priority)
 - [#4](https://github.com/rmc8/moodeSky/issues/4) - 埋め込みコンテンツ機能の実装 (medium priority)
 - [#5](https://github.com/rmc8/moodeSky/issues/5) - テストカバレッジの改善 (high priority)
 - [#6](https://github.com/rmc8/moodeSky/issues/6) - パフォーマンス最適化 (medium priority)
 - [#7](https://github.com/rmc8/moodeSky/issues/7) - OAuth認証機能の実装 (medium priority)
 - [#8](https://github.com/rmc8/moodeSky/issues/8) - 投稿作成機能の実装 (high priority)
+
+**Recently Completed:**
+- [#3](https://github.com/rmc8/moodeSky/issues/3) - ✅ セッション管理機能の完全実装
+- [#9](https://github.com/rmc8/moodeSky/issues/9) - ✅ プロジェクト管理システム移行完了
+- [#10](https://github.com/rmc8/moodeSky/issues/10) - ✅ アバター自動取得・表示機能の実装
 
 ### Issue Labels
 

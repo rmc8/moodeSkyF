@@ -159,4 +159,58 @@ class DeckDao extends DatabaseAccessor<AppDatabase> with _$DeckDaoMixin {
           ]))
         .watch();
   }
+
+  // Delete decks associated with a specific account (excluding cross-account decks)
+  Future<int> deleteDecksForAccount(String accountDid) async {
+    debugPrint('🗃️ DeckDao.deleteDecksForAccount: Starting deletion for accountDid=${accountDid.substring(0, 20)}...');
+    
+    // まず削除対象となるデッキを確認
+    final candidateDecks = await (select(decks)
+          ..where((t) => 
+              t.accountDid.isNotNull() & 
+              t.accountDid.equals(accountDid) & 
+              t.isCrossAccount.equals(false)
+          )).get();
+    
+    debugPrint('🗃️ DeckDao.deleteDecksForAccount: Found ${candidateDecks.length} candidate decks for deletion');
+    for (final deck in candidateDecks) {
+      debugPrint('  - Deck: ${deck.deckId} | Title: ${deck.title} | AccountDid: ${deck.accountDid} | IsCrossAccount: ${deck.isCrossAccount}');
+    }
+    
+    // 全デッキの状況も確認（デバッグ用）
+    final allDecks = await getAllDecks();
+    debugPrint('🗃️ DeckDao.deleteDecksForAccount: Current deck inventory (${allDecks.length} total):');
+    for (final deck in allDecks) {
+      debugPrint('  - Deck: ${deck.deckId} | Title: ${deck.title} | AccountDid: ${deck.accountDid} | IsCrossAccount: ${deck.isCrossAccount}');
+    }
+    
+    // より確実な削除を行うため、条件を改善
+    // accountDidがnullでないことも確認
+    final result = await (delete(decks)
+          ..where((t) => 
+              t.accountDid.isNotNull() & 
+              t.accountDid.equals(accountDid) & 
+              t.isCrossAccount.equals(false)
+          )).go();
+    
+    debugPrint('🗃️ DeckDao.deleteDecksForAccount: Deleted $result account-specific decks for accountDid=${accountDid.substring(0, 20)}...');
+    return result;
+  }
+
+  // Delete all decks (used during complete account cleanup)
+  Future<int> deleteAllDecks() async {
+    debugPrint('🗃️ DeckDao.deleteAllDecks: Starting deletion of all decks');
+    
+    // 削除前の状況を確認
+    final allDecks = await getAllDecks();
+    debugPrint('🗃️ DeckDao.deleteAllDecks: Current deck inventory (${allDecks.length} total):');
+    for (final deck in allDecks) {
+      debugPrint('  - Deck: ${deck.deckId} | Title: ${deck.title} | AccountDid: ${deck.accountDid} | IsCrossAccount: ${deck.isCrossAccount}');
+    }
+    
+    final result = await delete(decks).go();
+    
+    debugPrint('🗃️ DeckDao.deleteAllDecks: Deleted $result decks total');
+    return result;
+  }
 }

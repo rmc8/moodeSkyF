@@ -8,6 +8,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 // Project imports:
 import 'package:moodesky/core/providers/database_provider.dart';
+import 'package:moodesky/core/providers/deck_provider.dart';
 import 'package:moodesky/core/providers/session_provider.dart';
 import 'package:moodesky/features/auth/models/server_config.dart';
 import 'package:moodesky/services/bluesky/bluesky_service_v2.dart';
@@ -357,6 +358,16 @@ class AuthNotifier extends _$AuthNotifier {
       () async {
         await _blueskyService.signOutAll();
         state = const AuthState.unauthenticated();
+
+        // デッキプロバイダーを無効化してUIを即座に更新（全デッキ削除後）
+        debugPrint('🔄 [AUTH] Invalidating deck providers after sign out all');
+        ref.invalidate(cachedDecksProvider);
+        ref.invalidate(decksStreamProvider);
+        ref.invalidate(allDecksProvider);
+        // キャッシュも強制リフレッシュ
+        await _AuthUtils.safeExecute<void>(() async {
+          await ref.read(cachedDecksProvider.notifier).refreshDecks();
+        }, 'Failed to refresh deck cache after sign out all');
       },
       'Sign out all failed',
       onError: _setErrorState,
@@ -446,6 +457,16 @@ class AuthNotifier extends _$AuthNotifier {
             await _updateAuthenticatedState();
           }
         }
+
+        // デッキプロバイダーを無効化してUIを即座に更新
+        debugPrint('🔄 [AUTH] Invalidating deck providers after account removal');
+        ref.invalidate(cachedDecksProvider);
+        ref.invalidate(decksStreamProvider);
+        ref.invalidate(allDecksProvider);
+        // キャッシュも強制リフレッシュ
+        await _AuthUtils.safeExecute<void>(() async {
+          await ref.read(cachedDecksProvider.notifier).refreshDecks();
+        }, 'Failed to refresh deck cache after account removal');
       },
       'Failed to remove account',
       onError: _setErrorState,

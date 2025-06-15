@@ -246,37 +246,70 @@ class AuthService {
 
   /// Sign out all accounts
   Future<void> signOutAll() async {
-    try {
-      final accounts = await database.accountDao.getAllAccounts();
-      
-      for (final account in accounts) {
-        await signOut(account.did);
+    await database.transaction(() async {
+      try {
+        debugPrint('🗑️ [AUTH] Starting sign out all accounts');
+        
+        // Delete all decks since all accounts are being signed out
+        final deletedDecksCount = await database.deckDao.deleteAllDecks();
+        debugPrint('🗑️ [AUTH] Deleted $deletedDecksCount decks during sign out all');
+        
+        // Get all accounts before signing them out
+        final accounts = await database.accountDao.getAllAccounts();
+        debugPrint('🗑️ [AUTH] Signing out ${accounts.length} accounts');
+        
+        // Sign out each account
+        for (final account in accounts) {
+          await signOut(account.did);
+        }
+        
+        // Clear all secure storage
+        await secureStorage.deleteAll();
+        
+        debugPrint('✅ [AUTH] Successfully signed out all accounts and deleted all decks');
+      } catch (e) {
+        debugPrint('❌ [AUTH] Failed to sign out all accounts: $e');
+        rethrow;
       }
-      
-      // Clear all secure storage
-      await secureStorage.deleteAll();
-      
-      debugPrint('Signed out all accounts');
-    } catch (e) {
-      debugPrint('Failed to sign out all accounts: $e');
-      rethrow;
-    }
+    });
   }
 
   /// Remove an account
   Future<void> removeAccount(String accountDid) async {
-    try {
-      // Sign out first
-      await signOut(accountDid);
-      
-      // Remove from database
-      await database.accountDao.deleteAccount(accountDid);
-      
-      debugPrint('Removed account: $accountDid');
-    } catch (e) {
-      debugPrint('Failed to remove account: $e');
-      rethrow;
-    }
+    await database.transaction(() async {
+      try {
+        debugPrint('🗑️ [AUTH] Starting account removal for: ${accountDid.substring(0, 20)}...');
+        
+        // Check if this is the last account
+        final allAccounts = await database.accountDao.getAllAccounts();
+        final isLastAccount = allAccounts.length <= 1;
+        
+        debugPrint('🗑️ [AUTH] Total accounts: ${allAccounts.length}, isLastAccount: $isLastAccount');
+        
+        if (isLastAccount) {
+          // Last account: delete all decks (including cross-account decks)
+          debugPrint('🗑️ [AUTH] Last account removal - deleting all decks');
+          final deletedDecksCount = await database.deckDao.deleteAllDecks();
+          debugPrint('🗑️ [AUTH] Deleted $deletedDecksCount decks (all types)');
+        } else {
+          // Normal account removal: delete only account-specific decks
+          debugPrint('🗑️ [AUTH] Normal account removal - deleting account-specific decks');
+          final deletedDecksCount = await database.deckDao.deleteDecksForAccount(accountDid);
+          debugPrint('🗑️ [AUTH] Deleted $deletedDecksCount account-specific decks');
+        }
+        
+        // Sign out the account
+        await signOut(accountDid);
+        
+        // Remove account from database
+        await database.accountDao.deleteAccount(accountDid);
+        
+        debugPrint('✅ [AUTH] Successfully removed account and associated data: ${accountDid.substring(0, 20)}...');
+      } catch (e) {
+        debugPrint('❌ [AUTH] Failed to remove account: $e');
+        rethrow;
+      }
+    });
   }
 
   /// Refresh session for a specific account
