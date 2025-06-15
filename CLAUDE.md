@@ -117,25 +117,49 @@ Multi-column timeline interface with:
 - **Infinite scroll**: Virtual PageView for seamless navigation
 - **Account integration**: Per-deck or cross-account timelines
 
+## Project Management
+
+### GitHub Issues (Primary Task Management)
+
+All development tasks are managed through GitHub Issues:
+
+```bash
+# 1. Create issue before starting work
+gh issue create --title "Feature: Description" --body "Detailed description" --label "enhancement"
+
+# 2. Link commits to issues
+git commit -m "feat: implement feature xyz (closes #123)"
+
+# 3. Update issue progress
+gh issue comment 123 --body "Implementation progress update"
+
+# 4. Close issue when complete
+gh issue close 123
+```
+
+**Current Active Issues:**
+- [#3](https://github.com/rmc8/moodeSky/issues/3) - セッション管理機能の完全実装 (high priority)
+- [#4](https://github.com/rmc8/moodeSky/issues/4) - 埋め込みコンテンツ機能の実装 (medium priority)
+- [#5](https://github.com/rmc8/moodeSky/issues/5) - テストカバレッジの改善 (high priority)
+- [#6](https://github.com/rmc8/moodeSky/issues/6) - パフォーマンス最適化 (medium priority)
+- [#7](https://github.com/rmc8/moodeSky/issues/7) - OAuth認証機能の実装 (medium priority)
+- [#8](https://github.com/rmc8/moodeSky/issues/8) - 投稿作成機能の実装 (high priority)
+
+### Issue Labels
+
+- `enhancement` - 新機能や改善
+- `authentication` - 認証・セッション関連
+- `session-management` - セッション管理・マルチアカウント関連
+- `bluesky-api` - AT Protocol・Bluesky API関連
+- `ui-ux` - ユーザーインターフェース・体験関連
+- `performance` - パフォーマンス最適化
+- `testing` - テスト関連
+- `bug` - バグ修正
+- `documentation` - ドキュメント関連
+
 ## MCP Integration
 
 Leverage MCP servers for development (configured in `.mcp.json`):
-
-### Todoist Task Management (Required Workflow)
-
-```bash
-# 1. Create task before starting work (save TaskID!)
-mcp_todoist_create_task "moodeSky: Fix deck drag & drop"
-# Returns TaskID: "2024xxxxx" - SAVE THIS!
-
-# 2. Close task when complete
-mcp_todoist_close_task --id "2024xxxxx"
-
-# 3. Add comments during development
-mcp_todoist_create_task_comment --task-id "2024xxxxx" --content "Implementation complete"
-```
-
-**Critical**: Always save the TaskID returned from task creation. Required for closing, commenting, and creating subtasks.
 
 ### Bluesky API 実装・検証ワークフロー（必須）
 
@@ -273,19 +297,21 @@ void main() {
 
 **任意のタスクを開始する前に必ず実行**：
 
-1. **Sequential Thinking** でタスクを分析
+1. **GitHub Issue確認・作成**
+
+    ```bash
+    # 既存イシューの確認
+    gh issue list --state open
+    
+    # 新しいイシューの作成（必要に応じて）
+    gh issue create --title "[Feature/Fix] 具体的なタスク名" --body "詳細な説明" --label "適切なラベル"
+    ```
+
+2. **Sequential Thinking** でタスクを分析
 
     ```bash
     # 複雑性・実装戦略・リスクを事前分析
     mcp_sequential_thinking --thought "タスクの分析開始"
-    ```
-
-2. **Todoist Task 作成**（TaskID 保存必須）
-
-    ```bash
-    # メインタスク作成
-    mcp_todoist_create_task "[moodeSky] 具体的なタスク名"
-    # 返却されたTaskIDを必ず記録
     ```
 
 3. **Context7 でコンテキスト確認**
@@ -311,8 +337,12 @@ void main() {
     # 重要な実装情報をContext7に保存
     mcp_context7_store --information "実装詳細・注意点・決定事項"
 
-    # TodoistタスクをClose
-    mcp_todoist_close_task --id "保存したTaskID"
+    # GitHub Issue進捗更新・クローズ
+    gh issue comment {issue_number} --body "実装完了: 詳細な完了報告"
+    gh issue close {issue_number}
+    
+    # コミット時にイシュー番号を含める
+    git commit -m "feat: 実装内容 (closes #{issue_number})"
     ```
 
 **重要**: 上記プロセスを省略せず、必ず全ステップを実行すること。
