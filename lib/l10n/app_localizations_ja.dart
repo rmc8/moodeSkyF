@@ -111,7 +111,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get newAccountInfo => '新しいアカウントを追加';
 
   @override
-  String get multiAccountHelpText => '複数のアカウントに同時にログインして、簡単に切り替えることができます。';
+  String get multiAccountHelpText => '複数のアカウントを同時に管理して、セッション期限を監視できます。';
 
   @override
   String get accountAddedSuccess => 'アカウントが正常に追加されました';
@@ -130,7 +130,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get accountAddCancelled => 'アカウントの追加がキャンセルされました';
 
   @override
-  String get switchAccount => 'アカウント切り替え';
+  String get switchAccount => 'アカウント管理';
 
   @override
   String get signOutAll => 'すべてサインアウト';

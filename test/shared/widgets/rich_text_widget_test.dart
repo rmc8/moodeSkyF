@@ -207,9 +207,9 @@ void main() {
           home: Scaffold(
             body: BlueskyRichText(
               text: 'Test @mention #hashtag https://example.com',
-              onMentionTap: (handle) {},
-              onHashtagTap: (tag) {},
-              onLinkTap: (url) {},
+              onMentionTap: () {},
+              onHashtagTap: () {},
+              onLinkTap: () {},
             ),
           ),
         ),

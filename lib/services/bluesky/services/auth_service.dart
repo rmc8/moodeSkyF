@@ -10,6 +10,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // Project imports:
 import 'package:moodesky/services/database/database.dart';
 import 'package:moodesky/shared/models/auth_models.dart';
+import 'dart:convert';
 
 /// AuthService - Authentication service for AT Protocol
 /// 
@@ -90,10 +91,25 @@ class AuthService {
         profile: profile,
       );
 
+      // atproto.dart Session オブジェクトを作成してJWT有効期限を取得
+      final session = atcore.Session(
+        did: sessionData.did,
+        handle: sessionData.handle,
+        accessJwt: sessionData.accessJwt,
+        refreshJwt: sessionData.refreshJwt,
+      );
+      
+      final tokenExpiry = _getSessionExpiry(session);
+      debugPrint('🔍 [AUTH] Initial login - RefreshJWT expiry extracted: $tokenExpiry');
+      
       // アカウント情報をデータベースに保存
-      await _storeAccount(appPasswordSession, profile, isAdditionalAccount);
+      await _storeAccount(appPasswordSession, profile, isAdditionalAccount, tokenExpiry);
 
       debugPrint('✅ Account stored successfully in database');
+      
+      // セッションプロバイダーの状態を更新
+      // Note: プロバイダーはcontainerが利用可能な場合のみ更新
+      debugPrint('🔍 [DEBUG] Session stored, provider will be updated automatically');
 
       return AuthResult.success(
         session: authSessionData,
@@ -174,6 +190,7 @@ class AuthService {
     AppPasswordSessionData sessionData,
     UserProfile profile,
     bool isAdditionalAccount,
+    DateTime? tokenExpiry,
   ) async {
     try {
       await database.accountDao.upsertAccountByDid(
@@ -190,12 +207,19 @@ class AuthService {
           sessionString: Value(sessionData.sessionString),
           pdsUrl: authConfig.defaultPdsHost,
           loginMethod: const Value('app_password'),
+          tokenExpiry: Value(tokenExpiry),
           isActive: Value(!isAdditionalAccount), // Set as active if not additional
           lastUsed: Value(DateTime.now()),
         ),
       );
       
       debugPrint('Account stored successfully: ${sessionData.did}');
+      if (tokenExpiry != null) {
+        debugPrint('✅ [AUTH] RefreshJWT expires at: $tokenExpiry');
+        debugPrint('✅ [AUTH] Re-authentication needed in: ${tokenExpiry.difference(DateTime.now()).inDays} days');
+      } else {
+        debugPrint('⚠️ [AUTH] RefreshJWT expiry is null - will show "now" to user');
+      }
     } catch (e) {
       debugPrint('Failed to store account: $e');
       rethrow;
@@ -291,13 +315,28 @@ class AuthService {
         sessionString: account.sessionString,
       );
 
-      // Update account in database with new tokens
+      // Update token expiry with new session expiry
+      final session = atcore.Session(
+        did: account.did,
+        handle: account.handle,
+        accessJwt: refreshedSession.accessJwt,
+        refreshJwt: refreshedSession.refreshJwt,
+      );
+      
+      final tokenExpiry = _getSessionExpiry(session);
+
+      // Update account in database with new tokens and expiry in single operation
       await database.accountDao.updateAccountWithAppPasswordSession(
         did: accountDid,
         accessJwt: newSessionData.accessJwt,
         refreshJwt: newSessionData.refreshJwt,
         sessionString: newSessionData.sessionString ?? '',
+        tokenExpiry: tokenExpiry,
       );
+      
+      if (tokenExpiry != null) {
+        debugPrint('Updated token expiry to: $tokenExpiry');
+      }
 
       debugPrint('Token refresh successful for account: ${account.handle}');
       return newSessionData;
@@ -400,6 +439,247 @@ class AuthService {
       }
     } catch (e) {
       debugPrint('Failed to clear invalid sessions: $e');
+    }
+  }
+
+  /// Re-authenticate an existing account
+  /// This method requires the user to provide their password again
+  Future<AuthResult> reauthenticateAccount({
+    required String accountDid,
+    required String password,
+  }) async {
+    try {
+      debugPrint('🔄 Attempting re-authentication for account: $accountDid');
+      
+      // Get existing account information
+      final existingAccount = await database.accountDao.getAccountByDid(accountDid);
+      if (existingAccount == null) {
+        debugPrint('❌ Account not found for re-authentication: $accountDid');
+        return AuthResult.failure(
+          error: 'アカウントが見つかりません',
+          errorType: AuthErrorType.unknownError,
+        );
+      }
+
+      final identifier = existingAccount.handle;
+      final pdsHost = existingAccount.pdsUrl;
+      
+      debugPrint('   Re-authenticating as: $identifier');
+      debugPrint('   PDS Host: $pdsHost');
+
+      // Perform authentication with existing account details
+      final sessionResponse = await atproto.createSession(
+        identifier: identifier,
+        password: password,
+        service: pdsHost,
+      );
+
+      final sessionData = sessionResponse.data;
+      debugPrint('✅ Re-authentication successful for: ${sessionData.handle}');
+      debugPrint('   DID: ${sessionData.did}');
+
+      // Verify the DID matches the existing account
+      if (sessionData.did != accountDid) {
+        debugPrint('❌ DID mismatch during re-authentication');
+        debugPrint('   Expected: $accountDid');
+        debugPrint('   Received: ${sessionData.did}');
+        return AuthResult.failure(
+          error: 'アカウント情報が一致しません',
+          errorType: AuthErrorType.invalidCredentials,
+        );
+      }
+
+      // Extract token expiry from new session first
+      final session = atcore.Session(
+        did: sessionData.did,
+        handle: sessionData.handle,
+        accessJwt: sessionData.accessJwt,
+        refreshJwt: sessionData.refreshJwt,
+      );
+      
+      final tokenExpiry = _getSessionExpiry(session);
+      
+      // Update account session with token expiry in single operation
+      await database.accountDao.updateAccountWithAppPasswordSession(
+        did: accountDid,
+        accessJwt: sessionData.accessJwt,
+        refreshJwt: sessionData.refreshJwt,
+        sessionString: '',
+        tokenExpiry: tokenExpiry,
+      );
+      
+      if (tokenExpiry != null) {
+        debugPrint('Updated token expiry to: $tokenExpiry');
+        debugPrint('✅ [AUTH] Re-authentication successful - RefreshJWT valid for ${tokenExpiry.difference(DateTime.now()).inDays} days');
+      }
+
+      debugPrint('✅ Re-authentication complete, session updated in database');
+
+      // Create session data for return
+      final appPasswordSession = AppPasswordSessionData(
+        accessJwt: sessionData.accessJwt,
+        refreshJwt: sessionData.refreshJwt,
+        did: sessionData.did,
+        handle: sessionData.handle,
+        email: sessionData.email,
+        sessionString: '',
+      );
+
+      final profile = UserProfile(
+        did: sessionData.did,
+        handle: sessionData.handle,
+        displayName: existingAccount.displayName,
+        description: existingAccount.description,
+        avatar: existingAccount.avatar,
+        banner: existingAccount.banner,
+        email: sessionData.email,
+        isVerified: existingAccount.isVerified,
+      );
+
+      final authSessionData = AuthSessionData.appPassword(
+        appPasswordSession: appPasswordSession,
+        profile: profile,
+      );
+
+      return AuthResult.success(
+        session: authSessionData,
+        accountDid: accountDid,
+      );
+    } catch (e) {
+      debugPrint('❌ Re-authentication failed for $accountDid: $e');
+      
+      final errorType = _detectErrorType(e.toString());
+      final errorMessage = _createUserFriendlyErrorMessage(e.toString(), errorType);
+      
+      debugPrint('   Error type: $errorType');
+      debugPrint('   User message: $errorMessage');
+      
+      return AuthResult.failure(
+        error: errorMessage,
+        errorDescription: e.toString(),
+        errorType: errorType,
+      );
+    }
+  }
+
+  /// Try to refresh session automatically, fallback to re-authentication if needed
+  Future<AuthResult> refreshOrReauthenticate({
+    required String accountDid,
+    String? password,
+  }) async {
+    try {
+      debugPrint('🔄 Attempting automatic session refresh for: $accountDid');
+      
+      // First try to refresh using existing refresh token
+      final refreshResult = await refreshSession(accountDid);
+      if (refreshResult != null) {
+        debugPrint('✅ Session refreshed successfully');
+        
+        // Update token expiry with new refresh session
+        final existingAccount = await database.accountDao.getAccountByDid(accountDid);
+        if (existingAccount != null) {
+          final session = atcore.Session(
+            did: existingAccount.did,
+            handle: existingAccount.handle,
+            accessJwt: refreshResult.accessJwt,
+            refreshJwt: refreshResult.refreshJwt,
+          );
+          
+          final tokenExpiry = _getSessionExpiry(session);
+          if (tokenExpiry != null) {
+            await database.accountDao.updateAccountTokenExpiry(accountDid, tokenExpiry);
+            debugPrint('Updated token expiry to: $tokenExpiry');
+          }
+        }
+        
+        // Return success result
+        final account = await database.accountDao.getAccountByDid(accountDid);
+        if (account != null) {
+          final profile = UserProfile(
+            did: account.did,
+            handle: account.handle,
+            displayName: account.displayName,
+            description: account.description,
+            avatar: account.avatar,
+            banner: account.banner,
+            email: account.email,
+            isVerified: account.isVerified,
+          );
+
+          final authSessionData = AuthSessionData.appPassword(
+            appPasswordSession: refreshResult,
+            profile: profile,
+          );
+
+          return AuthResult.success(
+            session: authSessionData,
+            accountDid: accountDid,
+          );
+        }
+      }
+      
+      debugPrint('⚠️ Session refresh failed, re-authentication required');
+      
+      // If password is provided, attempt re-authentication
+      if (password != null) {
+        debugPrint('🔄 Attempting re-authentication with provided password');
+        return await reauthenticateAccount(
+          accountDid: accountDid,
+          password: password,
+        );
+      }
+      
+      // If no password provided, return failure requiring re-authentication
+      return AuthResult.failure(
+        error: 'セッションの更新に失敗しました。再度ログインしてください。',
+        errorType: AuthErrorType.tokenExpired,
+      );
+    } catch (e) {
+      debugPrint('❌ Refresh or re-authentication failed for $accountDid: $e');
+      
+      final errorType = _detectErrorType(e.toString());
+      final errorMessage = _createUserFriendlyErrorMessage(e.toString(), errorType);
+      
+      return AuthResult.failure(
+        error: errorMessage,
+        errorDescription: e.toString(),
+        errorType: errorType,
+      );
+    }
+  }
+
+  /// RefreshJwt から再認証期限を取得（ユーザー向け期限）
+  DateTime? _getSessionExpiry(atcore.Session session) {
+    try {
+      debugPrint('🔍 [AUTH] Getting refresh token expiry using Bluesky library');
+      
+      // Blueskyライブラリの内蔵Jwt機能を活用
+      final refreshJwt = session.refreshTokenJwt;
+      
+      // Jwt.isExpiredで期限切れチェック
+      if (refreshJwt.isExpired) {
+        debugPrint('⚠️ [AUTH] RefreshJWT has already expired');
+        return null; // 既に期限切れ
+      }
+      
+      // Jwt.expで直接有効期限を取得
+      final expiry = refreshJwt.exp;
+      debugPrint('✅ [AUTH] RefreshJWT expiry: $expiry');
+      
+      final timeUntilExpiry = expiry.difference(DateTime.now());
+      debugPrint('✅ [AUTH] Time until re-auth needed: ${timeUntilExpiry.inDays} days');
+      
+      return expiry;
+      
+    } catch (e) {
+      debugPrint('❌ [AUTH] Failed to get refresh token expiry using Bluesky library: $e');
+      
+      // フォールバック: エラーの場合は90日後
+      debugPrint('⚠️ [AUTH] Using 90-day default as fallback');
+      final defaultExpiry = DateTime.now().add(const Duration(days: 90));
+      debugPrint('✅ [AUTH] Default refresh expiry set to: $defaultExpiry');
+      
+      return defaultExpiry;
     }
   }
 }

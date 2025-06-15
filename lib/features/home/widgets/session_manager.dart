@@ -14,44 +14,110 @@ import 'package:moodesky/l10n/app_localizations.dart';
 import 'package:moodesky/shared/models/auth_models.dart';
 import 'package:moodesky/shared/models/session_models.dart';
 
-/// アカウント管理画面
+/// セッション管理画面
 /// 
-/// セッション管理ベースのマルチアカウント管理機能を提供します。
-/// アカウント切り替えの概念を削除し、個別のセッション管理に特化。
-class AccountManagementScreen extends ConsumerWidget {
-  const AccountManagementScreen({super.key});
+/// アカウント切り替えの概念を削除し、各アカウントのセッション管理に特化
+class SessionManager extends ConsumerWidget {
+  const SessionManager({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final accounts = ref.watch(availableAccountsProvider);
-    final l10n = AppLocalizations.of(context);
-    
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('アカウント管理'),
-        elevation: 0,
-      ),
-      body: _buildAccountList(context, ref, accounts, l10n),
-    );
-  }
+    final availableAccounts = ref.watch(availableAccountsProvider);
 
-  Widget _buildAccountList(
-    BuildContext context,
-    WidgetRef ref,
-    List<UserProfile> accounts,
-    AppLocalizations l10n,
-  ) {
-    return ListView.builder(
+    return Container(
       padding: const EdgeInsets.all(16),
-      itemCount: accounts.length + 1, // +1 for add account button
-      itemBuilder: (context, index) {
-        if (index == accounts.length) {
-          return _buildAddAccountButton(context, l10n);
-        }
-        
-        final account = accounts[index];
-        return _buildAccountItem(context, ref, account, l10n);
-      },
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Text(
+                'アカウント管理',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // アカウント一覧
+          if (availableAccounts.isNotEmpty)
+            ...availableAccounts.map(
+              (account) => _buildAccountItem(context, ref, account),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 32),
+              child: Center(
+                child: Text(
+                  AppLocalizations.of(context).noLoggedInAccounts,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            ),
+
+          const SizedBox(height: 16),
+
+          // 新しいアカウント追加ボタン
+          ListTile(
+            leading: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.add,
+                color: Theme.of(context).colorScheme.onSecondaryContainer,
+              ),
+            ),
+            title: Text(AppLocalizations.of(context).addAccountButton),
+            onTap: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AddAccountScreen(),
+                ),
+              );
+            },
+          ),
+
+          // 全アカウントサインアウトボタン
+          if (availableAccounts.isNotEmpty) ...[ 
+            const SizedBox(height: 8),
+            ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.errorContainer,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.logout,
+                  color: Theme.of(context).colorScheme.onErrorContainer,
+                ),
+              ),
+              title: Text(AppLocalizations.of(context).signOutAll),
+              onTap: () {
+                _showSignOutConfirmation(context, ref);
+              },
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -59,17 +125,14 @@ class AccountManagementScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     UserProfile account,
-    AppLocalizations l10n,
   ) {
-    final displayName = account.displayName ?? account.handle ?? 'Unknown';
-    final handle = account.handle ?? '';
-    
-    final sessionInfoAsync = ref.watch(sessionInfoProvider(account.did));
+    final sessionInfo = ref.watch(sessionInfoProvider(account.did));
+    final l10n = AppLocalizations.of(context);
     
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -78,11 +141,11 @@ class AccountManagementScreen extends ConsumerWidget {
               children: [
                 CircleAvatar(
                   backgroundImage: account.avatar != null 
-                    ? NetworkImage(account.avatar!)
-                    : null,
+                      ? NetworkImage(account.avatar!) 
+                      : null,
                   child: account.avatar == null 
-                    ? Text(displayName.isNotEmpty ? displayName[0].toUpperCase() : '?')
-                    : null,
+                      ? Text(account.handle.substring(0, 1).toUpperCase())
+                      : null,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -90,11 +153,11 @@ class AccountManagementScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        displayName,
+                        account.displayName ?? account.handle,
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       Text(
-                        '@$handle',
+                        '@${account.handle}',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -103,28 +166,13 @@ class AccountManagementScreen extends ConsumerWidget {
                   ),
                 ),
                 // セッション状態アイコン
-                sessionInfoAsync.when(
-                  data: (sessionInfo) => Icon(
-                    SessionUtils.getWarningIcon(sessionInfo?.status.warningLevel ?? SessionWarningLevel.expired),
-                    color: SessionUtils.getWarningColor(
-                      sessionInfo?.status.warningLevel ?? SessionWarningLevel.expired,
-                      Theme.of(context).colorScheme,
-                    ),
-                    size: 20,
+                Icon(
+                  SessionUtils.getWarningIcon(sessionInfo?.status.warningLevel ?? SessionWarningLevel.expired),
+                  color: SessionUtils.getWarningColor(
+                    sessionInfo?.status.warningLevel ?? SessionWarningLevel.expired,
+                    Theme.of(context).colorScheme,
                   ),
-                  loading: () => const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  error: (_, __) => Icon(
-                    SessionUtils.getWarningIcon(SessionWarningLevel.expired),
-                    color: SessionUtils.getWarningColor(
-                      SessionWarningLevel.expired,
-                      Theme.of(context).colorScheme,
-                    ),
-                    size: 20,
-                  ),
+                  size: 20,
                 ),
               ],
             ),
@@ -140,24 +188,10 @@ class AccountManagementScreen extends ConsumerWidget {
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(width: 4),
-                sessionInfoAsync.when(
-                  data: (sessionInfo) => Text(
-                    'セッション期限: ${SessionUtils.formatTimeRemaining(sessionInfo?.status.timeRemaining, l10n)}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  loading: () => Text(
-                    'セッション期限: 読み込み中...',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  error: (_, __) => Text(
-                    'セッション期限: エラー',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                Text(
+                  '再認証期限: ${SessionUtils.formatTimeRemaining(sessionInfo?.status.timeRemaining, l10n)}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -181,7 +215,7 @@ class AccountManagementScreen extends ConsumerWidget {
                 const SizedBox(width: 8),
                 // アカウント削除ボタン
                 OutlinedButton.icon(
-                  onPressed: () => _confirmDeleteAccount(context, ref, account, l10n),
+                  onPressed: () => _confirmDeleteAccount(context, ref, account),
                   icon: const Icon(Icons.delete, size: 16),
                   label: const Text('削除'),
                   style: OutlinedButton.styleFrom(
@@ -194,21 +228,6 @@ class AccountManagementScreen extends ConsumerWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildAddAccountButton(BuildContext context, AppLocalizations l10n) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: const CircleAvatar(
-          child: Icon(Icons.add),
-        ),
-        title: Text(l10n.addAccountButton),
-        subtitle: const Text('別のBlueskyアカウントでログイン'),
-        trailing: const Icon(Icons.arrow_forward_ios),
-        onTap: () => _addAccount(context),
       ),
     );
   }
@@ -394,6 +413,14 @@ class AccountManagementScreen extends ConsumerWidget {
           success: (session, accountDid) {
             debugPrint('✅ [AUTH] Success case - updating session state');
             
+            // Update session state immediately with retry mechanism
+            try {
+              ref.read(sessionInfoNotifierProvider.notifier).refreshSessionForAccount(accountDid);
+              debugPrint('✅ [STATE] Session state updated successfully');
+            } catch (e) {
+              debugPrint('❌ [STATE] Failed to update session state: $e');
+            }
+            
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Row(
@@ -513,30 +540,20 @@ class AccountManagementScreen extends ConsumerWidget {
     }
   }
 
-  void _addAccount(BuildContext context) {
-    // 新しいアカウント追加画面に遷移
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const AddAccountScreen(),
-      ),
-    );
-  }
-
   void _confirmDeleteAccount(
     BuildContext context,
     WidgetRef ref,
     UserProfile account,
-    AppLocalizations l10n,
   ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('アカウント削除の確認'),
-        content: Text('${account.displayName ?? account.handle}を削除しますか？\n\nこの操作は元に戻せません。'),
+        content: Text('${account.displayName ?? account.handle}を削除しますか？\\n\\nこの操作は元に戻せません。'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(l10n.cancelButton),
+            child: Text(AppLocalizations.of(context).cancelButton),
           ),
           TextButton(
             style: TextButton.styleFrom(foregroundColor: Colors.red),
@@ -552,7 +569,30 @@ class AccountManagementScreen extends ConsumerWidget {
   }
 
   void _deleteAccount(WidgetRef ref, UserProfile account) {
-    // TODO: 実際のアカウント削除処理
     ref.read(authNotifierProvider.notifier).removeAccount(account.did);
+  }
+
+  void _showSignOutConfirmation(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(AppLocalizations.of(context).signOutAllConfirmTitle),
+        content: Text(AppLocalizations.of(context).signOutAllConfirmMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(AppLocalizations.of(context).cancelButton),
+          ),
+          FilledButton(
+            onPressed: () async {
+              Navigator.of(context).pop(); // Close dialog
+              Navigator.of(context).pop(); // Close session manager
+              await ref.read(authNotifierProvider.notifier).signOutAll();
+            },
+            child: Text(AppLocalizations.of(context).signOutButton),
+          ),
+        ],
+      ),
+    );
   }
 }

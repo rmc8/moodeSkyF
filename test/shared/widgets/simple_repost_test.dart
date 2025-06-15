@@ -18,7 +18,7 @@ void main() {
         'displayName': 'Test Display Name',
       });
       expect(
-        UserDisplayUtils.getDisplayName(userWithDisplayName),
+        UserDisplayUtils.getDisplayName(userWithDisplayName.displayName, userWithDisplayName.handle),
         equals('Test Display Name'),
       );
 
@@ -28,8 +28,8 @@ void main() {
         'handle': 'test.bsky.social',
       });
       expect(
-        UserDisplayUtils.getDisplayName(userWithoutDisplayName),
-        equals('test.bsky.social'),
+        UserDisplayUtils.getDisplayName(userWithoutDisplayName.displayName, userWithoutDisplayName.handle),
+        equals('@test.bsky.social'),
       );
 
       // displayNameが空文字の場合
@@ -39,8 +39,8 @@ void main() {
         'displayName': '',
       });
       expect(
-        UserDisplayUtils.getDisplayName(userWithEmptyDisplayName),
-        equals('test.bsky.social'),
+        UserDisplayUtils.getDisplayName(userWithEmptyDisplayName.displayName, userWithEmptyDisplayName.handle),
+        equals('@test.bsky.social'),
       );
     });
 

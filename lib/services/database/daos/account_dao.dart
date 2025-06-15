@@ -124,12 +124,14 @@ class AccountDao extends DatabaseAccessor<AppDatabase> with _$AccountDaoMixin {
     required String accessJwt,
     required String refreshJwt,
     required String sessionString,
+    DateTime? tokenExpiry,
   }) {
     return (update(accounts)..where((t) => t.did.equals(did))).write(
       AccountsCompanion(
         accessJwt: Value(accessJwt),
         refreshJwt: Value(refreshJwt),
         sessionString: Value(sessionString),
+        tokenExpiry: Value(tokenExpiry),
         loginMethod: const Value('app_password'),
         lastUsed: Value(DateTime.now()),
         updatedAt: Value(DateTime.now()),
@@ -238,6 +240,16 @@ class AccountDao extends DatabaseAccessor<AppDatabase> with _$AccountDaoMixin {
     return (update(accounts)..where((t) => t.did.equals(did))).write(
       AccountsCompanion(
         accountLabel: Value(label),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  // Update token expiry
+  Future<int> updateAccountTokenExpiry(String did, DateTime? tokenExpiry) {
+    return (update(accounts)..where((t) => t.did.equals(did))).write(
+      AccountsCompanion(
+        tokenExpiry: Value(tokenExpiry),
         updatedAt: Value(DateTime.now()),
       ),
     );

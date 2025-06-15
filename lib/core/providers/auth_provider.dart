@@ -8,6 +8,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 // Project imports:
 import 'package:moodesky/core/providers/database_provider.dart';
+import 'package:moodesky/core/providers/session_provider.dart';
 import 'package:moodesky/features/auth/models/server_config.dart';
 import 'package:moodesky/services/bluesky/bluesky_service_v2.dart';
 import 'package:moodesky/services/database/database.dart';
@@ -247,6 +248,12 @@ class AuthNotifier extends _$AuthNotifier {
             await _fetchAndUpdateProfileInfo(accountDid);
             // 認証状態を更新（新規ログインフラグ付き）
             await _updateAuthenticatedState(isNewLogin: true);
+            
+            debugPrint('🔄 [AUTH] Updating session information after login');
+            // セッション情報プロバイダーを更新
+            final sessionNotifier = ref.read(sessionInfoNotifierProvider.notifier);
+            await sessionNotifier.refreshAllSessions();
+            debugPrint('✅ [AUTH] Session information updated successfully');
           },
           failure: (error, errorDescription, errorType) {
             debugPrint('❌ Authentication failed:');
@@ -388,6 +395,12 @@ class AuthNotifier extends _$AuthNotifier {
           success: (session, accountDid) async {
             await _fetchAndUpdateProfileInfo(accountDid);
             await _updateAuthenticatedState();
+            
+            debugPrint('🔄 [AUTH] Updating session information after adding account');
+            // セッション情報プロバイダーを更新
+            final sessionNotifier = ref.read(sessionInfoNotifierProvider.notifier);
+            await sessionNotifier.refreshAllSessions();
+            debugPrint('✅ [AUTH] Session information updated successfully after adding account');
           },
         );
 
@@ -495,6 +508,90 @@ class AuthNotifier extends _$AuthNotifier {
       activeAccountDid: activeAccount.did,
       accounts: profiles,
       isNewLogin: isNewLogin,
+    );
+  }
+
+  /// Re-authenticate an existing account
+  Future<AuthResult> reauthenticateAccount({
+    required String accountDid,
+    required String password,
+  }) async {
+    return await _AuthUtils.safeExecute<AuthResult>(() async {
+      final authResult = await _blueskyService.auth.reauthenticateAccount(
+        accountDid: accountDid,
+        password: password,
+      );
+
+      authResult.when(
+        success: (session, accountDid) async {
+          debugPrint('✅ Re-authentication successful for: $accountDid');
+          
+          // プロフィール情報を取得・更新
+          await _fetchAndUpdateProfileInfo(accountDid);
+          
+          // 認証状態を更新
+          await _updateAuthenticatedState();
+          
+          debugPrint('🔄 [AUTH] Updating session information after re-authentication');
+          // セッション情報プロバイダーを更新（全体と個別の両方）
+          final sessionNotifier = ref.read(sessionInfoNotifierProvider.notifier);
+          await sessionNotifier.refreshSessionForAccount(accountDid);
+          await sessionNotifier.refreshAllSessions();
+          debugPrint('✅ [AUTH] Session information updated successfully after re-authentication');
+        },
+        failure: (error, errorDescription, errorType) {
+          debugPrint('❌ Re-authentication failed for $accountDid:');
+          debugPrint('   Error: $error');
+          debugPrint('   Error Type: $errorType');
+        },
+        cancelled: () {
+          debugPrint('🚫 Re-authentication cancelled for $accountDid');
+        },
+      );
+
+      return authResult;
+    }, 'Re-authentication failed') ?? AuthResult.failure(
+      error: '再認証に失敗しました',
+      errorType: AuthErrorType.unknownError,
+    );
+  }
+
+  /// Try automatic session refresh, fallback to re-authentication if needed
+  Future<AuthResult> refreshOrReauthenticate({
+    required String accountDid,
+    String? password,
+  }) async {
+    return await _AuthUtils.safeExecute<AuthResult>(() async {
+      final authResult = await _blueskyService.auth.refreshOrReauthenticate(
+        accountDid: accountDid,
+        password: password,
+      );
+
+      authResult.when(
+        success: (session, accountDid) async {
+          debugPrint('✅ Session refresh/re-auth successful for: $accountDid');
+          
+          // 認証状態を更新
+          await _updateAuthenticatedState();
+          
+          // セッション情報プロバイダーを更新
+          final sessionNotifier = ref.read(sessionInfoNotifierProvider.notifier);
+          await sessionNotifier.refreshSessionForAccount(accountDid);
+        },
+        failure: (error, errorDescription, errorType) {
+          debugPrint('❌ Session refresh/re-auth failed for $accountDid:');
+          debugPrint('   Error: $error');
+          debugPrint('   Error Type: $errorType');
+        },
+        cancelled: () {
+          debugPrint('🚫 Session refresh/re-auth cancelled for $accountDid');
+        },
+      );
+
+      return authResult;
+    }, 'Session refresh or re-authentication failed') ?? AuthResult.failure(
+      error: 'セッション更新に失敗しました',
+      errorType: AuthErrorType.unknownError,
     );
   }
 }
