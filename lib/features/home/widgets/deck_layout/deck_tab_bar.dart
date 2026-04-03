@@ -11,6 +11,7 @@ import 'package:moodesky/core/providers/auth_provider.dart';
 import 'package:moodesky/features/home/widgets/add_deck_dialog.dart';
 import 'package:moodesky/services/database/database.dart';
 import 'package:moodesky/shared/models/auth_models.dart';
+import 'package:moodesky/shared/widgets/common/theme_helpers.dart';
 import 'deck_utils.dart';
 
 /// Desktop/Tablet tab bar for deck management
@@ -47,10 +48,10 @@ class _DeckTabBarState extends ConsumerState<DeckTabBar> {
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: context.appColors.getGlassColor(context, opacity: 0.8),
         border: Border(
           bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
           ),
         ),
       ),
@@ -177,13 +178,16 @@ class _DeckTabBarState extends ConsumerState<DeckTabBar> {
         margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: 0.5)
-              : Colors.transparent,
+              ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: context.isLight ? 0.7 : 0.3)
+              : context.appColors.getGlassColor(context, opacity: 0.2),
           borderRadius: BorderRadius.circular(12),
           border: isSelected ? Border.all(
-            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+            width: 1.2,
+          ) : Border.all(
+            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.05),
             width: 1,
-          ) : null,
+          ),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

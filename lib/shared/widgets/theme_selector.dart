@@ -82,7 +82,7 @@ class ThemeSelector extends ConsumerWidget {
       children: [
         if (showLabel) ...[
           Text(
-            AppLocalizations.of(context)!.themeLabel,
+            AppLocalizations.of(context).themeLabel,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
@@ -118,7 +118,7 @@ class ThemeSelector extends ConsumerWidget {
         const SizedBox(height: 8),
 
         Text(
-          AppLocalizations.of(context)!.themeDescription,
+          AppLocalizations.of(context).themeDescription,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: Theme.of(context).brightness == Brightness.light
                 ? const Color(0xFF222222)
@@ -131,7 +131,7 @@ class ThemeSelector extends ConsumerWidget {
   }
 
   String _getLocalizedThemeName(BuildContext context, AppThemeMode themeMode) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (themeMode) {
       case AppThemeMode.light:
         return l10n.themeLight;
@@ -157,7 +157,7 @@ class ThemeSelectionDialog extends ConsumerWidget {
 
     return asyncThemeMode.when(
       data: (currentThemeMode) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.selectTheme),
+        title: Text(AppLocalizations.of(context).selectTheme),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -186,7 +186,7 @@ class ThemeSelectionDialog extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context)!.cancelButton),
+            child: Text(AppLocalizations.of(context).cancelButton),
           ),
         ],
       ),
@@ -194,12 +194,12 @@ class ThemeSelectionDialog extends ConsumerWidget {
         content: Center(child: CircularProgressIndicator()),
       ),
       error: (error, stack) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.errorTitle),
+        title: Text(AppLocalizations.of(context).errorTitle),
         content: Text(error.toString()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context)!.cancelButton),
+            child: Text(AppLocalizations.of(context).cancelButton),
           ),
         ],
       ),
@@ -207,7 +207,7 @@ class ThemeSelectionDialog extends ConsumerWidget {
   }
 
   String _getLocalizedThemeName(BuildContext context, AppThemeMode themeMode) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (themeMode) {
       case AppThemeMode.light:
         return l10n.themeLight;
@@ -219,7 +219,7 @@ class ThemeSelectionDialog extends ConsumerWidget {
   }
 
   String _getThemeDescription(BuildContext context, AppThemeMode themeMode) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = AppLocalizations.of(context);
     switch (themeMode) {
       case AppThemeMode.light:
         return l10n.themeLightDescription;

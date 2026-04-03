@@ -88,7 +88,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (authState is AuthLoading) {
       return Scaffold(
         body: LoadingIndicators.standard(
-          message: AppLocalizations.of(context)!.signingIn,
+          message: AppLocalizations.of(context).signingIn,
         ),
       );
     }
@@ -153,7 +153,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              AppLocalizations.of(context)!.loginMethod,
+                              AppLocalizations.of(context).loginMethod,
                               style: context.appTextStyles.titleMedium,
                             ),
                             AppSpacing.verticalSpacerSM,
@@ -318,7 +318,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           labelText: AppLocalizations.of(
                             context,
                           )!.passwordLabel,
-                          hintText: AppLocalizations.of(context)!.passwordHint,
+                          hintText: AppLocalizations.of(context).passwordHint,
                           prefixIcon: const Icon(Icons.lock),
                           suffixIcon: IconButton(
                             icon: Icon(
@@ -428,14 +428,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         isLoading: _isLoading,
                         width: double.infinity,
                         size: CommonButtonSize.large,
-                        child: Text(AppLocalizations.of(context)!.signInButton),
+                        child: Text(AppLocalizations.of(context).signInButton),
                       ),
 
                       // Error display
                       if (authState is AuthError) ...[
                         AppSpacing.verticalSpacerMD,
                         ErrorWidgets.card(
-                          title: AppLocalizations.of(context)!.loginError,
+                          title: AppLocalizations.of(context).loginError,
                           message: authState.message,
                           margin: EdgeInsets.zero,
                           onRetry:
@@ -444,7 +444,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     .read(authNotifierProvider.notifier)
                                     .refresh()
                               : null,
-                          retryLabel: AppLocalizations.of(context)!.retryButton,
+                          retryLabel: AppLocalizations.of(context).retryButton,
                         ),
                       ],
 
@@ -452,7 +452,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                       // Help text
                       Text(
-                        AppLocalizations.of(context)!.helpTextAppPassword,
+                        AppLocalizations.of(context).helpTextAppPassword,
                         style: context.appTextStyles.caption,
                         textAlign: TextAlign.center,
                       ),

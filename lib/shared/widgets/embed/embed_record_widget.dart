@@ -73,6 +73,7 @@ class EmbedRecordWidget extends StatelessWidget {
         _buildListView(context, listView),
       
       // 未知のレコードタイプ
+      unknown: (Map<String, dynamic> unknown) => _buildUnknownRecord(context),
       orElse: () => _buildUnknownRecord(context),
     );
   }
@@ -365,6 +366,7 @@ class EmbedRecordWidget extends StatelessWidget {
       viewBlocked: (_) => 'viewBlocked',
       generatorView: (_) => 'generatorView',
       listView: (_) => 'listView',
+      unknown: (_) => 'unknown',
       orElse: () => 'unknown',
     );
   }

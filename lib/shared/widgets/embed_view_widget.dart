@@ -6,7 +6,10 @@ import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:chewie/chewie.dart';
 import 'package:video_player/video_player.dart';
 
+import 'package:shimmer/shimmer.dart';
+
 // Project imports:
+import 'package:moodesky/core/theme/app_themes.dart';
 import 'package:moodesky/shared/utils/url_utils.dart';
 
 /// 現在のBluesky 0.18.10 EmbedView用のウィジェット
@@ -64,9 +67,10 @@ class EmbedViewWidget extends StatelessWidget {
             color: effectiveBackgroundColor,
             borderRadius: effectiveBorderRadius,
             border: Border.all(
-              color: theme.colorScheme.outline.withValues(alpha: 0.3),
+              color: theme.colorScheme.outline.withValues(alpha: 0.15),
               width: 1.0,
             ),
+            boxShadow: theme.brightness == Brightness.light ? AppThemes.premiumShadow : null,
           )
         : null, // 透明な場合は装飾なし
       constraints: maxHeight != null ? BoxConstraints(maxHeight: maxHeight!) : null,
@@ -368,18 +372,15 @@ class EmbedViewWidget extends StatelessWidget {
           fit: BoxFit.cover,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
-            return Container(
-              width: double.infinity,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: borderRadius,
-              ),
-              child: Center(
-                child: CircularProgressIndicator(
-                  value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                      : null,
+            return Shimmer.fromColors(
+              baseColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+              highlightColor: Theme.of(context).colorScheme.surfaceContainer,
+              child: Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: borderRadius,
                 ),
               ),
             );
@@ -403,8 +404,8 @@ class EmbedViewWidget extends StatelessWidget {
         color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: borderRadius,
         border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.6),
-          width: 0.5,
+          color: theme.colorScheme.outline.withValues(alpha: 0.1),
+          width: 1.0,
         ),
       ),
       child: Center(
@@ -709,11 +710,13 @@ class EmbedViewWidget extends StatelessWidget {
         },
         child: Container(
           decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
             border: Border.all(
-              color: theme.colorScheme.outline.withValues(alpha: 0.3),
+              color: theme.colorScheme.outline.withValues(alpha: 0.15),
               width: 1.0,
             ),
-            borderRadius: BorderRadius.circular(8.0),
+            borderRadius: BorderRadius.circular(12.0),
+            boxShadow: theme.brightness == Brightness.light ? AppThemes.premiumShadow : null,
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(

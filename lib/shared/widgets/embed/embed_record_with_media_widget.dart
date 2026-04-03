@@ -111,6 +111,7 @@ class EmbedRecordWithMediaWidget extends StatelessWidget {
       ),
       
       // 未知のメディアタイプ
+      unknown: (Map<String, dynamic> unknown) => _buildUnknownMedia(context),
       orElse: () => _buildUnknownMedia(context),
     );
   }
@@ -148,6 +149,7 @@ class EmbedRecordWithMediaWidget extends StatelessWidget {
       images: (_) => 'images',
       video: (_) => 'video',
       external: (_) => 'external',
+      unknown: (_) => 'unknown',
       orElse: () => 'unknown',
     );
   }

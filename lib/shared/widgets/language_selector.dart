@@ -93,7 +93,7 @@ class LanguageSelector extends ConsumerWidget {
       children: [
         if (showLabel) ...[
           Text(
-            AppLocalizations.of(context)!.languageLabel,
+            AppLocalizations.of(context).languageLabel,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
@@ -132,7 +132,7 @@ class LanguageSelector extends ConsumerWidget {
         const SizedBox(height: 8),
 
         Text(
-          AppLocalizations.of(context)!.languageDescription,
+          AppLocalizations.of(context).languageDescription,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color: Theme.of(context).brightness == Brightness.light
                 ? const Color(0xFF222222)
@@ -159,7 +159,7 @@ class LanguageSelectionDialog extends ConsumerWidget {
 
     return asyncLocale.when(
       data: (currentLocale) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.selectLanguage),
+        title: Text(AppLocalizations.of(context).selectLanguage),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -195,7 +195,7 @@ class LanguageSelectionDialog extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context)!.cancelButton),
+            child: Text(AppLocalizations.of(context).cancelButton),
           ),
         ],
       ),
@@ -203,12 +203,12 @@ class LanguageSelectionDialog extends ConsumerWidget {
         content: Center(child: CircularProgressIndicator()),
       ),
       error: (error, stack) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.errorTitle),
+        title: Text(AppLocalizations.of(context).errorTitle),
         content: Text(error.toString()),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context)!.cancelButton),
+            child: Text(AppLocalizations.of(context).cancelButton),
           ),
         ],
       ),

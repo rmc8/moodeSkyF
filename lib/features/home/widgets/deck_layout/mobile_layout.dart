@@ -1,4 +1,5 @@
 // Flutter imports:
+import 'dart:ui';
 import 'package:flutter/material.dart';
 
 // Package imports:
@@ -64,15 +65,16 @@ class _MobileLayoutState extends ConsumerState<MobileLayout> {
         Expanded(
           child: PageView.builder(
             controller: _pageController,
-            itemCount: widget.decks.length * 1000,
+            itemCount: widget.decks.isEmpty ? 0 : widget.decks.length * 1000,
             onPageChanged: (virtualIndex) {
-              if (!_isReordering) {
+                if (widget.decks.isEmpty) return;
                 final realIndex = virtualIndex % widget.decks.length;
                 widget.onTabSelected(realIndex);
                 _scrollTabToVisible(realIndex);
               }
             },
             itemBuilder: (context, virtualIndex) {
+              if (widget.decks.isEmpty) return const SizedBox.shrink();
               final realIndex = virtualIndex % widget.decks.length;
               final deck = widget.decks[realIndex];
               return _buildMobileDeckPage(deck, realIndex, widget.decks.length);
@@ -84,18 +86,23 @@ class _MobileLayoutState extends ConsumerState<MobileLayout> {
   }
 
   Widget _buildMobileTabBar() {
-    return Container(
-      height: 44,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          height: 48,
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.light
+                ? Colors.white.withValues(alpha: 0.7)
+                : const Color(0xFF1C1C1E).withValues(alpha: 0.7),
+            border: Border(
+              bottom: BorderSide(
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+              ),
+            ),
           ),
-        ),
-      ),
-      child: Row(
-        children: [
+          child: Row(
+            children: [
           // Tab scroll view
           Expanded(
             child: ReorderableListView.builder(
@@ -143,7 +150,7 @@ class _MobileLayoutState extends ConsumerState<MobileLayout> {
               tooltip: 'Add Deck',
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -223,14 +230,24 @@ class _MobileLayoutState extends ConsumerState<MobileLayout> {
   }
 
   Widget _buildMobileDeckPage(Deck deck, int index, int totalDecks) {
-    return Container(
-      margin: const EdgeInsets.all(8),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.15),
         ),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: Theme.of(context).brightness == Brightness.light
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ]
+            : null,
       ),
       child: Column(
         children: [
@@ -238,10 +255,10 @@ class _MobileLayoutState extends ConsumerState<MobileLayout> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainer,
+              color: Theme.of(context).colorScheme.surfaceContainer.withValues(alpha: 0.5),
               borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(8),
-                topRight: Radius.circular(8),
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
               ),
             ),
             child: Row(

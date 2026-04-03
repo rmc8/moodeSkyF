@@ -21,7 +21,7 @@ class SettingsScreen extends ConsumerWidget {
     final textStyles = context.appTextStyles;
 
     return Scaffold(
-      appBar: AppBar(title: Text(AppLocalizations.of(context)!.settingsTitle)),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).settingsTitle)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -33,7 +33,7 @@ class SettingsScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppLocalizations.of(context)!.appearanceSettings,
+                    AppLocalizations.of(context).appearanceSettings,
                     style: textStyles.titleMedium.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -62,7 +62,7 @@ class SettingsScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppLocalizations.of(context)!.accountSettings,
+                    AppLocalizations.of(context).accountSettings,
                     style: textStyles.titleMedium.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -72,7 +72,7 @@ class SettingsScreen extends ConsumerWidget {
                   ListTile(
                     leading: const Icon(Icons.manage_accounts),
                     title: Text(
-                      AppLocalizations.of(context)!.manageAccounts,
+                      AppLocalizations.of(context).manageAccounts,
                       style: TextStyle(
                         color: context.isLight
                             ? const Color(0xFF1A1A1A)
@@ -81,7 +81,7 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                     ),
                     subtitle: Text(
-                      AppLocalizations.of(context)!.manageAccountsDescription,
+                      AppLocalizations.of(context).manageAccountsDescription,
                       style: TextStyle(
                         color: context.isLight
                             ? const Color(0xFF222222)
@@ -107,14 +107,14 @@ class SettingsScreen extends ConsumerWidget {
                       color: Theme.of(context).colorScheme.strongErrorColor,
                     ),
                     title: Text(
-                      AppLocalizations.of(context)!.signOutAll,
+                      AppLocalizations.of(context).signOutAll,
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.strongErrorColor,
                         fontWeight: FontWeight.w600, // フォントウェイトも少し上げる
                       ),
                     ),
                     subtitle: Text(
-                      AppLocalizations.of(context)!.signOutAllDescription,
+                      AppLocalizations.of(context).signOutAllDescription,
                       style: TextStyle(
                         color: context.isLight
                             ? const Color(0xFF222222)
@@ -139,7 +139,7 @@ class SettingsScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    AppLocalizations.of(context)!.appInformation,
+                    AppLocalizations.of(context).appInformation,
                     style: textStyles.titleMedium.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -149,7 +149,7 @@ class SettingsScreen extends ConsumerWidget {
                   ListTile(
                     leading: const Icon(Icons.info),
                     title: Text(
-                      AppLocalizations.of(context)!.aboutApp,
+                      AppLocalizations.of(context).aboutApp,
                       style: TextStyle(
                         color: Theme.of(context).brightness == Brightness.light
                             ? const Color(0xFF1A1A1A)
@@ -158,7 +158,7 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                     ),
                     subtitle: Text(
-                      AppLocalizations.of(context)!.appVersion('0.0.1'),
+                      AppLocalizations.of(context).appVersion('0.0.1'),
                       style: TextStyle(
                         color: Theme.of(context).brightness == Brightness.light
                             ? const Color(0xFF222222)
@@ -177,7 +177,7 @@ class SettingsScreen extends ConsumerWidget {
                   ListTile(
                     leading: const Icon(Icons.privacy_tip),
                     title: Text(
-                      AppLocalizations.of(context)!.privacyPolicy,
+                      AppLocalizations.of(context).privacyPolicy,
                       style: TextStyle(
                         color: Theme.of(context).brightness == Brightness.light
                             ? const Color(0xFF1A1A1A)
@@ -191,7 +191,7 @@ class SettingsScreen extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            AppLocalizations.of(context)!.comingSoon,
+                            AppLocalizations.of(context).comingSoon,
                           ),
                         ),
                       );
@@ -201,7 +201,7 @@ class SettingsScreen extends ConsumerWidget {
                   ListTile(
                     leading: const Icon(Icons.description),
                     title: Text(
-                      AppLocalizations.of(context)!.termsOfService,
+                      AppLocalizations.of(context).termsOfService,
                       style: TextStyle(
                         color: Theme.of(context).brightness == Brightness.light
                             ? const Color(0xFF1A1A1A)
@@ -215,7 +215,7 @@ class SettingsScreen extends ConsumerWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            AppLocalizations.of(context)!.comingSoon,
+                            AppLocalizations.of(context).comingSoon,
                           ),
                         ),
                       );
@@ -234,12 +234,12 @@ class SettingsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.signOutAllConfirmTitle),
-        content: Text(AppLocalizations.of(context)!.signOutAllConfirmMessage),
+        title: Text(AppLocalizations.of(context).signOutAllConfirmTitle),
+        content: Text(AppLocalizations.of(context).signOutAllConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context)!.cancelButton),
+            child: Text(AppLocalizations.of(context).cancelButton),
           ),
           FilledButton(
             onPressed: () async {
@@ -250,7 +250,7 @@ class SettingsScreen extends ConsumerWidget {
               backgroundColor: Theme.of(context).colorScheme.strongErrorColor,
               foregroundColor: Colors.white,
             ),
-            child: Text(AppLocalizations.of(context)!.signOutButton),
+            child: Text(AppLocalizations.of(context).signOutButton),
           ),
         ],
       ),
@@ -275,7 +275,7 @@ class SettingsScreen extends ConsumerWidget {
           color: Theme.of(context).colorScheme.onPrimary,
         ),
       ),
-      children: [Text(AppLocalizations.of(context)!.aboutAppDescription)],
+      children: [Text(AppLocalizations.of(context).aboutAppDescription)],
     );
   }
 }

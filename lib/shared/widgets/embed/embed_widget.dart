@@ -51,7 +51,7 @@ class EmbedWidget extends StatelessWidget {
     final effectivePadding = padding ?? const EdgeInsets.all(8.0);
     final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(8.0);
     final effectiveBackgroundColor = backgroundColor ?? 
-        theme.cardColor.withOpacity(0.5);
+        theme.cardColor.withValues(alpha: 0.5);
 
     return Container(
       padding: effectivePadding,
@@ -59,7 +59,7 @@ class EmbedWidget extends StatelessWidget {
         color: effectiveBackgroundColor,
         borderRadius: effectiveBorderRadius,
         border: Border.all(
-          color: theme.dividerColor.withOpacity(0.3),
+          color: theme.dividerColor.withValues(alpha: 0.3),
           width: 1.0,
         ),
       ),
@@ -98,6 +98,7 @@ class EmbedWidget extends StatelessWidget {
         ),
       
       // 未知の埋め込みタイプまたはエラー処理
+      unknown: (Map<String, dynamic> unknown) => _buildUnknownEmbed(context),
       orElse: () => _buildUnknownEmbed(context),
     );
   }
@@ -137,6 +138,7 @@ class EmbedWidget extends StatelessWidget {
       external: (_) => 'external',
       record: (_) => 'record',
       recordWithMedia: (_) => 'recordWithMedia',
+      unknown: (_) => 'unknown',
       orElse: () => 'unknown',
     );
   }

@@ -193,12 +193,12 @@ class AccountSwitcher extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context)!.signOutAllConfirmTitle),
-        content: Text(AppLocalizations.of(context)!.signOutAllConfirmMessage),
+        title: Text(AppLocalizations.of(context).signOutAllConfirmTitle),
+        content: Text(AppLocalizations.of(context).signOutAllConfirmMessage),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context)!.cancelButton),
+            child: Text(AppLocalizations.of(context).cancelButton),
           ),
           FilledButton(
             onPressed: () async {
@@ -206,7 +206,7 @@ class AccountSwitcher extends ConsumerWidget {
               Navigator.of(context).pop(); // Close account switcher
               await ref.read(authNotifierProvider.notifier).signOutAll();
             },
-            child: Text(AppLocalizations.of(context)!.signOutButton),
+            child: Text(AppLocalizations.of(context).signOutButton),
           ),
         ],
       ),

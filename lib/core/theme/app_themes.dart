@@ -30,8 +30,25 @@ class AppThemes {
   static const Color sunflowerYellow = Color(0xFFFFC107); // Material Amber 500
 
   /// アクション用カラー
-  static const Color repostGreen = Color(0xFF4CAF50); // Material Green 500
-  static const Color likeRed = Color(0xFFF44336); // Material Red 500
+  static const Color repostGreen = Color(0xFF34C759); // iOS-style Green
+  static const Color likeRed = Color(0xFFFF2D55); // iOS-style Pink/Red
+
+  /// プレミアムな影の定義
+  static List<BoxShadow> premiumShadow = [
+    BoxShadow(
+      color: Colors.black.withValues(alpha: 0.08),
+      blurRadius: 12,
+      offset: const Offset(0, 4),
+      spreadRadius: 0,
+    ),
+  ];
+
+  /// ガラス効果の背景（透過）
+  static Color getGlassColor(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.light
+        ? Colors.white.withValues(alpha: 0.7)
+        : const Color(0xFF1E1E1E).withValues(alpha: 0.7);
+  }
 
   /// ライトテーマ - 空の青をアクセントに
   static ThemeData lightTheme = ThemeData(
@@ -144,18 +161,19 @@ class AppThemes {
           seedColor: skyBlue,
           brightness: Brightness.light,
         ).copyWith(
-          primary: skyBlue,
-          primaryContainer: skyBlueLight.withValues(alpha: 0.1),
-          onPrimaryContainer: skyBlueDark,
-          secondary: skyBlueLight,
-          tertiary: const Color(0xFF4FC3F7), // Light Blue 300
+          primary: const Color(0xFF007AFF), // Apple Blue
+          primaryContainer: const Color(0xFFE5F1FF),
+          onPrimaryContainer: const Color(0xFF004080),
+          secondary: const Color(0xFF5856D6), // Apple Purple
+          tertiary: const Color(0xFF32ADE6), // Apple Cyan
           surface: Colors.white,
-          surfaceContainer: const Color(0xFFF8F9FA),
-          surfaceContainerHighest: const Color(0xFFE3F2FD),
-          onSurface: const Color(0xFF1A1A1A),
-          onSurfaceVariant: const Color(0xFF424242), // より濃いグレーに変更（コントラスト向上）
-          outline: const Color(0xFFE0E0E0),
-          outlineVariant: const Color(0xFFF5F5F5),
+          surfaceContainer: const Color(0xFFF2F2F7), // iOS System Gray 6
+          surfaceContainerHighest: const Color(0xFFE5E5EA), // iOS System Gray 5
+          onSurface: const Color(0xFF1C1C1E),
+          onSurfaceVariant: const Color(0xFF3A3A3C),
+          outline: const Color(0xFFC7C7CC),
+          outlineVariant: const Color(0xFFE5E5EA),
+          shadow: Colors.black.withValues(alpha: 0.1),
         ),
 
     // AppBar
@@ -343,18 +361,19 @@ class AppThemes {
           seedColor: sunsetOrange,
           brightness: Brightness.dark,
         ).copyWith(
-          primary: sunsetOrange,
-          primaryContainer: sunsetOrange.withValues(alpha: 0.2),
-          onPrimaryContainer: sunsetOrangeLight,
-          secondary: sunsetOrangeLight,
-          tertiary: const Color(0xFFFFAB91), // Deep Orange 200
-          surface: const Color(0xFF121212),
-          surfaceContainer: const Color(0xFF1E1E1E),
-          surfaceContainerHighest: const Color(0xFF2D2D2D),
-          onSurface: const Color(0xFFF5F5F5), // より明るい白に変更
-          onSurfaceVariant: const Color(0xFFCCCCCC), // より明るく高コントラストなグレーに変更
-          outline: const Color(0xFF3D3D3D),
-          outlineVariant: const Color(0xFF2D2D2D),
+          primary: const Color(0xFFFF9F0A), // Apple Orange (Dark)
+          primaryContainer: const Color(0xFF3D2400),
+          onPrimaryContainer: const Color(0xFFFFD60A),
+          secondary: const Color(0xFFBF5AF2), // Apple Purple (Dark)
+          tertiary: const Color(0xFF64D2FF), // Apple Cyan (Dark)
+          surface: const Color(0xFF1C1C1E), // iOS Dark Gray 6
+          surfaceContainer: const Color(0xFF2C2C2E), // iOS Dark Gray 5
+          surfaceContainerHighest: const Color(0xFF3A3A3C), // iOS Dark Gray 4
+          onSurface: const Color(0xFFF2F2F7),
+          onSurfaceVariant: const Color(0xFFAEAEB2),
+          outline: const Color(0xFF48484A),
+          outlineVariant: const Color(0xFF3A3A3C),
+          shadow: Colors.black.withValues(alpha: 0.3),
         ),
 
     // AppBar

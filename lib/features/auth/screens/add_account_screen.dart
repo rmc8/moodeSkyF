@@ -182,7 +182,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  AppLocalizations.of(context)!.accountAddedSuccess,
+                  AppLocalizations.of(context).accountAddedSuccess,
                 ),
                 backgroundColor: Colors.green,
               ),
@@ -205,7 +205,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  AppLocalizations.of(context)!.accountAddCancelled,
+                  AppLocalizations.of(context).accountAddCancelled,
                 ),
                 backgroundColor: Colors.orange,
               ),
@@ -218,7 +218,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              AppLocalizations.of(context)!.accountAddFailed(e.toString()),
+              AppLocalizations.of(context).accountAddFailed(e.toString()),
             ),
             backgroundColor: Colors.red,
           ),
@@ -237,7 +237,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.addAccountTitle),
+        title: Text(AppLocalizations.of(context).addAccountTitle),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
@@ -269,7 +269,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
                               ),
                               AppSpacing.horizontalSpacerSM,
                               Text(
-                                AppLocalizations.of(context)!.newAccountInfo,
+                                AppLocalizations.of(context).newAccountInfo,
                                 style: context.appTextStyles.titleMedium
                                     .copyWith(
                                       color: context.appColors.info,
@@ -280,7 +280,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
                           ),
                           AppSpacing.verticalSpacerSM,
                           Text(
-                            AppLocalizations.of(context)!.multiAccountInfo,
+                            AppLocalizations.of(context).multiAccountInfo,
                             style: context.appTextStyles.caption,
                           ),
                         ],
@@ -423,7 +423,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
                         labelText: AppLocalizations.of(
                           context,
                         )!.identifierLabel,
-                        hintText: AppLocalizations.of(context)!.identifierHint,
+                        hintText: AppLocalizations.of(context).identifierHint,
                         prefixIcon: const Icon(Icons.person),
                         border: const OutlineInputBorder(),
                       ),
@@ -444,8 +444,8 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
                     TextFormField(
                       controller: _passwordController,
                       decoration: InputDecoration(
-                        labelText: AppLocalizations.of(context)!.passwordLabel,
-                        hintText: AppLocalizations.of(context)!.passwordHint,
+                        labelText: AppLocalizations.of(context).passwordLabel,
+                        hintText: AppLocalizations.of(context).passwordHint,
                         prefixIcon: const Icon(Icons.lock),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -465,7 +465,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
                       textInputAction: TextInputAction.done,
                       validator: (value) {
                         if (value?.trim().isEmpty ?? true) {
-                          return AppLocalizations.of(context)!.passwordRequired;
+                          return AppLocalizations.of(context).passwordRequired;
                         }
                         return null;
                       },
@@ -494,7 +494,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
                               ),
                               AppSpacing.horizontalSpacerSM,
                               Text(
-                                AppLocalizations.of(context)!.aboutAppPassword,
+                                AppLocalizations.of(context).aboutAppPassword,
                                 style: context.appTextStyles.labelSmall
                                     .copyWith(
                                       fontWeight: FontWeight.bold,
@@ -528,7 +528,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
                               );
                             },
                             child: Text(
-                              AppLocalizations.of(context)!.generateAppPassword,
+                              AppLocalizations.of(context).generateAppPassword,
                               style: context.appTextStyles.caption.copyWith(
                                 color: context.appColors.info,
                                 decoration: TextDecoration.underline,
@@ -548,7 +548,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
                       width: double.infinity,
                       size: CommonButtonSize.large,
                       child: Text(
-                        AppLocalizations.of(context)!.addAccountButton,
+                        AppLocalizations.of(context).addAccountButton,
                       ),
                     ),
 
@@ -556,7 +556,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
                     if (authState is AuthError) ...[
                       AppSpacing.verticalSpacerMD,
                       ErrorWidgets.card(
-                        title: AppLocalizations.of(context)!.accountAddError,
+                        title: AppLocalizations.of(context).accountAddError,
                         message: authState.message,
                         margin: EdgeInsets.zero,
                       ),
@@ -566,7 +566,7 @@ class _AddAccountScreenState extends ConsumerState<AddAccountScreen> {
 
                     // Help text
                     Text(
-                      AppLocalizations.of(context)!.multiAccountHelpText,
+                      AppLocalizations.of(context).multiAccountHelpText,
                       style: context.appTextStyles.caption,
                       textAlign: TextAlign.center,
                     ),

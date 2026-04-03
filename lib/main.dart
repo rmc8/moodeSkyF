@@ -127,7 +127,7 @@ class AppRouter extends ConsumerWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  AppLocalizations.of(context)!.loginSuccess(
+                  AppLocalizations.of(context).loginSuccess(
                     activeAccount.displayName ?? activeAccount.handle,
                   ),
                 ),
@@ -135,7 +135,7 @@ class AppRouter extends ConsumerWidget {
                 duration: const Duration(seconds: 3),
                 behavior: SnackBarBehavior.floating,
                 action: SnackBarAction(
-                  label: AppLocalizations.of(context)!.close,
+                  label: AppLocalizations.of(context).close,
                   textColor: context.appColors.onPrimary,
                   onPressed: () {
                     ScaffoldMessenger.of(context).hideCurrentSnackBar();
@@ -197,7 +197,7 @@ class LoadingScreen extends StatelessWidget {
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
             Text(
-              AppLocalizations.of(context)!.loadingText,
+              AppLocalizations.of(context).loadingText,
               style: context.appTextStyles.bodyMedium?.copyWith(
                 color: context.appColors.onSurface.withOpacity(0.6),
               ),
@@ -231,7 +231,7 @@ class ErrorScreen extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               Text(
-                AppLocalizations.of(context)!.errorTitle,
+                AppLocalizations.of(context).errorTitle,
                 style: context.appTextStyles.headlineMedium,
                 textAlign: TextAlign.center,
               ),
@@ -246,7 +246,7 @@ class ErrorScreen extends StatelessWidget {
                 FilledButton.icon(
                   onPressed: onRetry,
                   icon: const Icon(Icons.refresh),
-                  label: Text(AppLocalizations.of(context)!.retryButton),
+                  label: Text(AppLocalizations.of(context).retryButton),
                 ),
             ],
           ),

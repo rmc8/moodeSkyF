@@ -55,11 +55,28 @@ class DeckItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final textStyles = context.appTextStyles;
 
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: context.isLight ? Colors.white : Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+                width: 1.0,
+              ),
+              boxShadow: context.isLight ? AppThemes.premiumShadow : null,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
           // ユーザー情報行（PostItemと同じレイアウト）
           Row(
             children: [
@@ -100,9 +117,8 @@ class DeckItem extends ConsumerWidget {
                 Text(
                   timestamp!,
                   style: textStyles.bodySmall.copyWith(
-                    color: context.isLight
-                        ? const Color(0xFF424242)
-                        : const Color(0xFFCCCCCC),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+                    fontSize: 12,
                   ),
                 ),
               if (trailing != null) trailing!,
@@ -221,8 +237,11 @@ class DeckItem extends ConsumerWidget {
                   ),
               ],
             ),
+                ],
+              ),
+            ),
           ],
-        ],
+        ),
       ),
     );
   }
