@@ -213,7 +213,7 @@ class _BlueskyTimelineWidgetState extends BaseTimelineWidgetState<BlueskyTimelin
 
       final response = await blueskyService.getTimelineFeed(
         accountDid: accountDid!,
-        limit: 20,
+        limit: 50,
       );
 
       if (!mounted) return;
@@ -288,7 +288,7 @@ class _BlueskyTimelineWidgetState extends BaseTimelineWidgetState<BlueskyTimelin
       final response = await blueskyService.getTimelineFeed(
         accountDid: accountDid!,
         cursor: _nextCursor,
-        limit: 20,
+        limit: 50,
       );
 
       if (!mounted) return;
@@ -381,7 +381,7 @@ class _BlueskyTimelineWidgetState extends BaseTimelineWidgetState<BlueskyTimelin
 
       final response = await blueskyService.getTimelineFeed(
         accountDid: accountDid!,
-        limit: 20,
+        limit: 50,
       );
 
       if (!mounted) return;

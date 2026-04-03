@@ -361,6 +361,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (decks.isEmpty) {
           return _buildEmptyState();
         }
+
+        // Safety check: Ensure _selectedTabIndex is within bounds
+        if (_selectedTabIndex >= decks.length) {
+          _selectedTabIndex = decks.length - 1;
+        }
+        if (_selectedTabIndex < 0) {
+          _selectedTabIndex = 0;
+        }
+
         final screenWidth = MediaQuery.of(context).size.width;
         
         if (screenWidth >= 600) {
