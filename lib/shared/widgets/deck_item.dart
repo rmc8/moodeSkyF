@@ -238,9 +238,9 @@ class DeckItem extends ConsumerWidget {
               ],
             ),
                 ],
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

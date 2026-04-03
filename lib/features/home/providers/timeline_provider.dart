@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:moodesky/core/providers/auth_provider.dart';
-import 'package:moodesky/core/providers/bluesky_service_provider.dart';
 import 'package:moodesky/services/database/database.dart';
 
 /// State for a single timeline deck

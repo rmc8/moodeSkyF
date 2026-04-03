@@ -68,11 +68,12 @@ class _MobileLayoutState extends ConsumerState<MobileLayout> {
             itemCount: widget.decks.isEmpty ? 0 : widget.decks.length * 1000,
             onPageChanged: (virtualIndex) {
                 if (widget.decks.isEmpty) return;
-                final realIndex = virtualIndex % widget.decks.length;
-                widget.onTabSelected(realIndex);
-                _scrollTabToVisible(realIndex);
-              }
-            },
+                if (!_isReordering) {
+                  final realIndex = virtualIndex % widget.decks.length;
+                  widget.onTabSelected(realIndex);
+                  _scrollTabToVisible(realIndex);
+                }
+              },
             itemBuilder: (context, virtualIndex) {
               if (widget.decks.isEmpty) return const SizedBox.shrink();
               final realIndex = virtualIndex % widget.decks.length;
@@ -148,11 +149,12 @@ class _MobileLayoutState extends ConsumerState<MobileLayout> {
                 );
               },
               tooltip: 'Add Deck',
-            ),
           ),
-        ),
+        ],
       ),
-    );
+    ),
+  ),
+);
   }
 
   Widget _buildMobileTab(Deck deck, int index, bool isSelected, List<Deck> allDecks) {

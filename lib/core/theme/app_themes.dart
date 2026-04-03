@@ -44,10 +44,10 @@ class AppThemes {
   ];
 
   /// ガラス効果の背景（透過）
-  static Color getGlassColor(BuildContext context) {
+  static Color getGlassColor(BuildContext context, {double opacity = 0.7}) {
     return Theme.of(context).brightness == Brightness.light
-        ? Colors.white.withValues(alpha: 0.7)
-        : const Color(0xFF1E1E1E).withValues(alpha: 0.7);
+        ? Colors.white.withValues(alpha: opacity)
+        : const Color(0xFF1E1E1E).withValues(alpha: opacity);
   }
 
   /// ライトテーマ - 空の青をアクセントに

@@ -48,7 +48,7 @@ class _DeckTabBarState extends ConsumerState<DeckTabBar> {
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        color: context.appColors.getGlassColor(context, opacity: 0.8),
+        color: AppThemes.getGlassColor(context, opacity: 0.8),
         border: Border(
           bottom: BorderSide(
             color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
@@ -179,7 +179,7 @@ class _DeckTabBarState extends ConsumerState<DeckTabBar> {
         decoration: BoxDecoration(
           color: isSelected
               ? Theme.of(context).colorScheme.primaryContainer.withValues(alpha: context.isLight ? 0.7 : 0.3)
-              : context.appColors.getGlassColor(context, opacity: 0.2),
+              : AppThemes.getGlassColor(context, opacity: 0.2),
           borderRadius: BorderRadius.circular(12),
           border: isSelected ? Border.all(
             color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
